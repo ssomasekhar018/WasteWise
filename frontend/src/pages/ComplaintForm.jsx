@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import api from "../utils/api";
 import { GoogleMap, LoadScriptNext, Marker } from '@react-google-maps/api';
 import PropTypes from 'prop-types';
 import Swal from "sweetalert2";
@@ -85,12 +85,11 @@ const ComplaintForm = ({ user }) => {
     }
 
     try {
-      await axios.post(
-        "http://localhost:5000/api/complaints",
+      await api.post(
+        "/complaints",
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         }

@@ -38,7 +38,7 @@ A comprehensive **MERN stack-based waste management platform** that connects cit
 
 ## 🖥️ Live Demo
 
-> [🌐 View Application Live](https://your-wastewise-demo-link.com)
+> [🌐 View Application Live](https://wastewise-management-1.onrender.com)
 
 ---
 
@@ -63,6 +63,50 @@ A comprehensive **MERN stack-based waste management platform** that connects cit
 
 ---
 
+## 🧩 System Architecture
+
+The WasteWise Garbage Management System follows a three-tier architecture:
+
+1. **Presentation Layer (Frontend):**
+   - React.js with Vite for fast development
+   - TailwindCSS for responsive UI components
+   - Chart.js for analytics visualization
+   - Google Maps API for location services
+
+2. **Application Layer (Backend):**
+   - Node.js and Express.js for RESTful API services
+   - JWT for secure authentication and authorization
+   - Multer middleware for file uploads
+   - Custom middleware for request validation
+
+3. **Data Layer (Database):**
+   - MongoDB Atlas for cloud database storage
+   - Mongoose ODM for data modeling and validation
+   - Efficient data schemas for complaints, users, and area managers
+
+```
+
+---
+
+## 🔌 API Endpoints
+
+### Authentication
+- `POST /api/users/register` - User registration
+- `POST /api/users/login` - User login
+- `POST /api/area-managers/manager-login` - Manager login
+
+### Complaints
+- `GET /api/complaints` - Get all complaints
+- `POST /api/complaints` - Submit complaint
+- `PUT /api/complaints/:id/status` - Update status
+
+### Analytics
+- `GET /api/analytics/complaints-by-status` - Status analytics
+- `GET /api/analytics/complaints-by-area-detailed` - Area-based analytics
+- `GET /api/analytics/complaints-by-progress` - Progress analytics
+
+---
+
 ## ⚙️ Setup & Installation
 
 ### Prerequisites
@@ -73,7 +117,7 @@ A comprehensive **MERN stack-based waste management platform** that connects cit
 ### Environment Setup
 
 1. **Backend Environment Variables**
-   Create `server/.env`:
+   Create `backend/.env`:
    ```env
    MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/wastewise
    JWT_SECRET=your_super_secure_jwt_secret_key_here
@@ -82,9 +126,9 @@ A comprehensive **MERN stack-based waste management platform** that connects cit
    ```
 
 2. **Frontend Environment Variables**
-   Create `client/.env`:
+   Create `frontend/.env`:
    ```env
-   VITE_APP_API_URL=https://your-backend-url.onrender.com/api
+   VITE_APP_API_URL=http://localhost:5000/api
    VITE_APP_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
    ```
 
@@ -99,19 +143,19 @@ A comprehensive **MERN stack-based waste management platform** that connects cit
 2. **Install dependencies:**
    ```bash
    # Backend
-   cd server && npm install
+   cd backend && npm install
    
    # Frontend
-   cd client && npm install
+   cd frontend && npm install
    ```
 
 3. **Start development servers:**
    ```bash
    # Backend (Terminal 1)
-   cd server && npm start
+   cd backend && npm start
    
    # Frontend (Terminal 2)
-   cd client && npm run dev
+   cd frontend && npm run dev
    ```
 
 4. **Access the application:**
@@ -180,24 +224,6 @@ wastewise/
 │
 └── README.md                # Project documentation
 ```
-
----
-
-## 🔌 API Endpoints
-
-### Authentication
-- `POST /api/users/register` - User registration
-- `POST /api/users/login` - User login
-- `POST /api/area-managers/manager-login` - Manager login
-
-### Complaints
-- `GET /api/complaints` - Get all complaints
-- `POST /api/complaints` - Submit complaint
-- `PUT /api/complaints/:id/status` - Update status
-
-### Analytics
-- `GET /api/analytics/complaints-by-status` - Status analytics
-- `GET /api/analytics/complaints-by-progress` - Progress analytics
 
 ---
 

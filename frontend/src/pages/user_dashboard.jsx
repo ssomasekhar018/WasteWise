@@ -26,7 +26,7 @@ const UserDashboard = ({ user: propUser }) => {
     if (token) {
       try {
         await axios.post(
-          "http://localhost:5000/api/users/logout",
+          "https://wastewise-management.onrender.com/api/users/logout",
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -92,7 +92,7 @@ const UserDashboard = ({ user: propUser }) => {
           return;
         }
 
-        const { data } = await axios.get("http://localhost:5000/api/users/me", {
+        const { data } = await axios.get("https://wastewise-management.onrender.com/api/users/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -112,7 +112,7 @@ const UserDashboard = ({ user: propUser }) => {
   const fetchComplaints = async () => {
     try {
       const token = localStorage.getItem("token");
-      const { data } = await axios.get("http://localhost:5000/api/complaints/my-complaints", {
+      const { data } = await axios.get("https://wastewise-management.onrender.com/api/complaints/my-complaints", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setComplaints(data);

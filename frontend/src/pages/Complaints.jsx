@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import api from "../utils/api";
 import { LoadScriptNext } from "@react-google-maps/api";
 import Sidebar from "../pages/Sidebar";
 
@@ -59,9 +60,7 @@ const Complaints = ({ user }) => {
           return;
         }
 
-        const { data } = await axios.get("http://localhost:5000/api/complaints", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const { data } = await api.get("/complaints");
 
         // Set complaints immediately to show data faster
         setComplaints(data);
@@ -98,12 +97,9 @@ const Complaints = ({ user }) => {
   const updateStatus = async (id, status) => {
     try {
       const token = localStorage.getItem("token");
-      const { data } = await axios.patch(
-        `http://localhost:5000/api/complaints/${id}/status`,
-        { status },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const { data } = await api.patch(
+        `/complaints/${id}/status`,
+        { status }
       );
 
       setComplaints((prevComplaints) =>

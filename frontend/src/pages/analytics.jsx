@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Sidebar from "../pages/Sidebar";
 import { Bar } from "react-chartjs-2";
 import { Pie } from "react-chartjs-2";
-import axios from "axios";
+import api from "../utils/api";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -37,8 +37,8 @@ const Analytics = ({ manager }) => {
   useEffect(() => {
     const fetchComplaintsData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/analytics/complaints-by-area-detailed"
+        const response = await api.get(
+          "/analytics/complaints-by-area-detailed"
         );
         const data = response.data;
 
@@ -69,8 +69,8 @@ const Analytics = ({ manager }) => {
   useEffect(() => {
     const fetchComplaintsByStatus = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/analytics/complaints-by-status"
+        const response = await api.get(
+          "/analytics/complaints-by-status"
         );
         const data = response.data;
 

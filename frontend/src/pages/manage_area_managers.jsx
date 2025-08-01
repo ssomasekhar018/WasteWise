@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../utils/api";
 import Sidebar from "../pages/Sidebar";
 
 
@@ -20,9 +20,7 @@ const ManageAreaManagers = ({ manager }) => {
   useEffect(() => {
     const fetchManagers = async () => {
       try {
-        const { data } = await axios.get("http://localhost:5000/api/area-managers", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        const { data } = await api.get("/area-managers");
         setManagers(data);
       } catch {
         setError("Failed to fetch area managers.");
@@ -41,14 +39,10 @@ const ManageAreaManagers = ({ manager }) => {
 
     try {
       if (editMode) {
-        await axios.put(`http://localhost:5000/api/area-managers/${formData.NIC_no}`, formData, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        await api.put(`/area-managers/${formData.NIC_no}`, formData);
         setSuccessMessage("Area manager updated successfully!");
       } else {
-        await axios.post("http://localhost:5000/api/area-managers", formData, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        await api.post("/area-managers", formData);
         setSuccessMessage("Area manager added successfully!");
       }
       setEditMode(false);
@@ -67,9 +61,7 @@ const ManageAreaManagers = ({ manager }) => {
 
   const handleDelete = async (NIC_no) => {
     try {
-      await axios.delete(`http://localhost:5000/api/area-managers/${NIC_no}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      await api.delete(`/area-managers/${NIC_no}`);
       setManagers(managers.filter((manager) => manager.NIC_no !== NIC_no));
       setSuccessMessage("Area manager deleted successfully!");
     } catch {

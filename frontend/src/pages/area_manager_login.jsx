@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../utils/api";
 import { useNavigate } from "react-router-dom";
 
 const AreaManagerLogin = ({ setManager }) => {
@@ -12,7 +12,7 @@ const AreaManagerLogin = ({ setManager }) => {
     e.preventDefault();
 
     try {
-      const { data } = await axios.post("http://localhost:5000/api/area-managers/manager-login", {
+      const { data } = await api.post("/area-managers/manager-login", {
         email,
         password,
       });

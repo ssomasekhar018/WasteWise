@@ -1,6 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/api";
 
 const UserSignup = () => {
   const [formData, setFormData] = useState({
@@ -30,14 +30,14 @@ const UserSignup = () => {
     }
     try {
       if (formData.accountType === "citizen") {
-        await axios.post("http://localhost:5000/api/users/signup", {
+        await api.post("/users/signup", {
           username: formData.username,
           email: formData.email,
           password: formData.password,
         });
         navigate("/login");
       } else if (formData.accountType === "admin") {
-        await axios.post("http://localhost:5000/api/area-managers", {
+        await api.post("/area-managers", {
           NIC_no: formData.NIC_no,
           first_name: formData.first_name,
           last_name: formData.last_name,

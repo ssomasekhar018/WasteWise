@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import api from "../utils/api";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserCircle } from "@fortawesome/free-solid-svg-icons";
@@ -42,10 +43,7 @@ const ManagerDashboard = ({ manager: propManager }) => {
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const { data } = await axios.get("http://localhost:5000/api/complaints/area", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const { data } = await api.get("/complaints/area");
 
       
         const acceptedComplaints = data.filter((complaint) => complaint.status === "accepted");

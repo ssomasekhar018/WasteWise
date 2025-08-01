@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/api";
 
 const UserLogin = ({ setUser, setManager }) => {
   // Pre-fill with test admin credentials for easier testing
@@ -24,7 +24,7 @@ const UserLogin = ({ setUser, setManager }) => {
     try {
       if (formData.accountType === "citizen") {
         // Citizen user login
-        const { data } = await axios.post("http://localhost:5000/api/users/login", {
+        const { data } = await api.post("/users/login", {
           email: formData.email,
           password: formData.password,
         });
@@ -41,7 +41,7 @@ const UserLogin = ({ setUser, setManager }) => {
             email: formData.email,
             password: formData.password,
           });
-          const response = await axios.post("http://localhost:5000/api/users/login", {
+          const response = await api.post("/users/login", {
             email: formData.email,
             password: formData.password,
           });
@@ -70,7 +70,7 @@ const UserLogin = ({ setUser, setManager }) => {
           // If user login fails, try area manager login as fallback
           try {
             console.log("Trying area manager login");
-            const { data } = await axios.post("http://localhost:5000/api/area-managers/manager-login", {
+            const { data } = await api.post("/area-managers/manager-login", {
               email: formData.email,
               password: formData.password,
             });
