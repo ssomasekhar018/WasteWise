@@ -38,7 +38,7 @@ A comprehensive **MERN stack-based waste management platform** that connects cit
 
 ## 🖥️ Live Demo
 
-> [🌐 View Application Live](https://wastewise-management-1.onrender.com)
+> [🌐 View Application Live](https://wastewise-1-v9qh.onrender.com)
 
 ---
 
