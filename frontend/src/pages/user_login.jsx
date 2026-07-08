@@ -52,7 +52,7 @@ const UserLogin = ({ setUser, setManager }) => {
             email: formData.email,
             password: formData.password,
           });
-          const response = await api.post("/area-managers/manager-login", {
+          const response = await api.post("/users/login", {
             email: formData.email,
             password: formData.password,
           });
