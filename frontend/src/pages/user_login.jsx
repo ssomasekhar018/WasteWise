@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import api from "../utils/api";
 
 const UserLogin = ({ setUser, setManager }) => {
@@ -11,6 +12,7 @@ const UserLogin = ({ setUser, setManager }) => {
   });
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("signin");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -178,15 +180,24 @@ const UserLogin = ({ setUser, setManager }) => {
             className="w-full p-2 mb-3 border border-green-500 focus:border-green-700 focus:ring focus:ring-green-200 rounded outline-none"
             required
           />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full p-2 mb-4 border border-green-500 focus:border-green-700 focus:ring focus:ring-green-200 rounded outline-none"
-            required
-          />
+          <div className="relative mb-4 w-full">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full p-2 pr-10 border border-green-500 focus:border-green-700 focus:ring focus:ring-green-200 rounded outline-none"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-green-700 hover:text-green-900"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
           <button
             type="submit"
             className="bg-gradient-to-r from-green-400 to-green-600 text-white px-4 py-2 rounded w-full shadow-md hover:from-green-500 hover:to-green-700 transition-all"
