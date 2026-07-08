@@ -54,9 +54,11 @@ app.use(cors({
   origin: [
     "http://localhost:5173", 
     "http://localhost:3000",
+    "http://localhost:5174",
     "https://wastewise-management-1.onrender.com",
     "https://wastewise-management.onrender.com",
-    "https://wastewise-1-v9qh.onrender.com"
+    "https://wastewise-1-v9qh.onrender.com",
+    "https://wastewise-ngki.onrender.com"
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
