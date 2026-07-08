@@ -31,8 +31,14 @@ const ManagerDashboard = ({ manager: propManager }) => {
       return;
     }
     
+    const token = localStorage.getItem("token");
     const storedManager = localStorage.getItem("manager");
-    if (!storedManager) {
+    
+    console.log('Manager Dashboard - Token exists:', !!token);
+    console.log('Manager Dashboard - Manager exists:', !!storedManager);
+    
+    if (!token || !storedManager) {
+      console.log('Missing authentication data, redirecting to login');
       setError("Manager not logged in. Please log in to access the dashboard.");
       navigate("/manager-login");
     } else {
@@ -89,10 +95,25 @@ const ManagerDashboard = ({ manager: propManager }) => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("manager");
-    navigate("/manager-login");
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      console.log('Manager logging out with token:', token ? token.substring(0, 10) + '...' : 'No token');
+      
+      if (token) {
+        // Call the logout API endpoint
+        await api.post('/users/logout');
+        console.log('Manager logout API call successful');
+      }
+    } catch (error) {
+      console.error('Error during manager logout:', error);
+    } finally {
+      // Always clear localStorage and redirect regardless of API success
+      localStorage.removeItem('token');
+      localStorage.removeItem('manager');
+      console.log('Manager localStorage cleared, redirecting to login');
+      navigate('/manager-login');
+    }
   };
 
 

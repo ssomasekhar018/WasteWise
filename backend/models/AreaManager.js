@@ -17,5 +17,9 @@ areaManagerSchema.pre("save", async function (next) {
   next();
 });
 
+areaManagerSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
 const AreaManager = mongoose.model("AreaManager", areaManagerSchema);
 module.exports = AreaManager;

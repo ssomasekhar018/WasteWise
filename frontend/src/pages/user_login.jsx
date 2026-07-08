@@ -21,27 +21,38 @@ const UserLogin = ({ setUser, setManager }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    console.log('Login attempt for:', formData.accountType, 'with email:', formData.email);
     try {
       if (formData.accountType === "citizen") {
         // Citizen user login
+        console.log('Attempting citizen login...');
         const { data } = await api.post("/users/login", {
           email: formData.email,
           password: formData.password,
         });
         console.log("Citizen login successful:", data);
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data));
-        setUser(data);
-        navigate("/user_dashboard"); // Redirect to user dashboard
+        
+        // Store token and user data in localStorage
+        if (data && data.token) {
+          console.log("Storing token in localStorage:", data.token.substring(0, 10) + '...');
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("user", JSON.stringify(data));
+          setUser(data);
+          navigate("/user_dashboard"); // Redirect to user dashboard
+        } else {
+          console.error("Login response missing token:", data);
+          setError("Login failed: Invalid response from server");
+        }
       } else if (formData.accountType === "admin") {
         // Municipal admin login - try user model first with admin role
+        console.log('Attempting admin login...');
         try {
-          console.log("Attempting admin login with User model:", formData.email);
+          console.log("Trying user login with admin role...");
           console.log("Request payload:", {
             email: formData.email,
             password: formData.password,
           });
-          const response = await api.post("/users/login", {
+          const response = await api.post("/area-managers/manager-login", {
             email: formData.email,
             password: formData.password,
           });
@@ -53,10 +64,16 @@ const UserLogin = ({ setUser, setManager }) => {
           
           if (data.role === "admin") {
             console.log("Admin login successful, storing data and redirecting");
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("user", JSON.stringify(data));
-            setUser(data);
-            navigate("/complaints"); // Redirect to admin dashboard
+            if (data && data.token) {
+              console.log("Storing admin token in localStorage:", data.token.substring(0, 10) + '...');
+              localStorage.setItem("token", data.token);
+              localStorage.setItem("user", JSON.stringify(data));
+              setUser(data);
+              navigate("/complaints"); // Redirect to admin dashboard
+            } else {
+              console.error("Admin login response missing token:", data);
+              setError("Login failed: Invalid response from server");
+            }
           } else {
             // If user exists but is not admin, show error
             console.log("User exists but is not admin:", data.role);
@@ -68,6 +85,7 @@ const UserLogin = ({ setUser, setManager }) => {
           console.log("Error status:", userErr.response?.status);
           
           // If user login fails, try area manager login as fallback
+          console.log('User login failed or not admin, trying area manager login...');
           try {
             console.log("Trying area manager login");
             const { data } = await api.post("/area-managers/manager-login", {
@@ -75,14 +93,30 @@ const UserLogin = ({ setUser, setManager }) => {
               password: formData.password,
             });
             console.log("Area manager login response:", data);
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("manager", JSON.stringify(data.manager)); // Store as manager
-            setManager(data.manager);
-            navigate("/manager-dashboard"); // Redirect to manager dashboard
+            if (data && data.token) {
+              console.log("Storing manager token in localStorage:", data.token.substring(0, 10) + '...');
+              localStorage.setItem("token", data.token);
+              localStorage.setItem("manager", JSON.stringify(data.manager)); // Store as manager
+              setManager(data.manager);
+              navigate("/manager-dashboard"); // Redirect to manager dashboard
+            } else {
+              console.error("Manager login response missing token:", data);
+              setError("Login failed: Invalid response from server");
+            }
           } catch (managerErr) {
             console.error("Admin login failed - User error:", userErr.message);
             console.error("Admin login failed - Manager error:", managerErr.message);
-            setError("Invalid admin credentials. Please check your email and password.");
+            console.error("Manager error response:", managerErr.response?.data);
+            console.error("Manager error status:", managerErr.response?.status);
+            
+            // Provide more specific error message based on the error status
+            if (managerErr.response?.status === 401) {
+              setError("Invalid admin credentials. Please check your email and password.");
+            } else if (managerErr.response?.status === 500) {
+              setError("Server error. Please try again later or contact support.");
+            } else {
+              setError(managerErr.response?.data?.message || "Login failed. Please try again.");
+            }
           }
         }
       }
@@ -90,7 +124,15 @@ const UserLogin = ({ setUser, setManager }) => {
       console.error("Login error:", err);
       console.error("Error response:", err.response?.data);
       console.error("Error status:", err.response?.status);
-      setError(err.response?.data?.message || "Invalid email or password");
+      
+      // Provide more specific error message based on the error status
+      if (err.response?.status === 401) {
+        setError("Invalid credentials. Please check your email and password.");
+      } else if (err.response?.status === 500) {
+        setError("Server error. Please try again later or contact support.");
+      } else {
+        setError(err.response?.data?.message || "Login failed. Please try again.");
+      }
     }
   };
 

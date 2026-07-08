@@ -34,18 +34,24 @@ const protect = asyncHandler(async (req, res, next) => {
 const authMiddleware = (req, res, next) => {
   const token = req.header("Authorization")?.split(" ")[1];
   if (!token) {
+    console.log('No token provided in request');
     return res.status(401).json({ message: "Access denied. No token provided." });
   }
 
+  console.log('Token received:', token.substring(0, 10) + '...');
+
   tokenBlacklist.has(token).then(isBlacklisted => {
     if (isBlacklisted) {
+      console.log('Token is blacklisted');
       return res.status(401).json({ message: "Token is blacklisted. Please log in again." });
     }
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log('Token decoded successfully:', { id: decoded.id, email: decoded.email });
       req.user = decoded;
       next();
     } catch (err) {
+      console.error('Token verification failed:', err.message);
       return res.status(400).json({ message: "Invalid token." });
     }
   });

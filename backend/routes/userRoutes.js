@@ -35,31 +35,46 @@ const generateToken = (user) => {
 // @desc Register a new user
 // @route POST /api/users/signup
 // @access Public
-// ...existing code...
 router.post(
   '/signup',
   asyncHandler(async (req, res) => {
+    console.log('Signup attempt with data:', req.body);
     const { username, email, password, role = "user", area } = req.body;
+    
+    console.log('Extracted user data:', { username, email, role, area });
 
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      res.status(400);
-      throw new Error('User already exists');
-    }
+    try {
+      const userExists = await User.findOne({ email });
+      console.log('User exists check:', userExists ? 'User already exists' : 'Email is available');
+      
+      if (userExists) {
+        res.status(400);
+        throw new Error('User already exists');
+      }
 
-    const user = await User.create({ username, email, password, role, area });
-    if (user) {
-      res.status(201).json({
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        area: user.area,
-        token: generateToken(user), 
-      });
-    } else {
-      res.status(400);
-      throw new Error('Invalid user data');
+      console.log('Attempting to create user in database...');
+      const user = await User.create({ username, email, password, role, area });
+      console.log('User created successfully:', user ? `ID: ${user._id}, Email: ${user.email}` : 'Failed to create user');
+      
+      if (user) {
+        const token = generateToken(user);
+        console.log('Generated token for new user');
+        
+        res.status(201).json({
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          area: user.area,
+          token: token, 
+        });
+      } else {
+        res.status(400);
+        throw new Error('Invalid user data');
+      }
+    } catch (error) {
+      console.error('Error in user signup:', error.message);
+      res.status(400).json({ message: error.message });
     }
   })
 );
@@ -80,20 +95,41 @@ router.post(
     const { email, password } = req.body;
     console.log('Login attempt with:', { email, password: password ? '[REDACTED]' : 'undefined' });
 
-    const user = await User.findOne({ email });
-    console.log('User found:', user ? `ID: ${user._id}, Email: ${user.email}` : 'No user found');
-    if (user && (await user.matchPassword(password))) {
-      res.json({
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        area: user.area,
-        token: generateToken(user),
-      });
-    } else {
-      res.status(401);
-      throw new Error('Invalid email or password');
+    try {
+      // Validate input
+      if (!email || !password) {
+        console.log('Missing email or password in request');
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+
+      const user = await User.findOne({ email });
+      console.log('User found:', user ? `ID: ${user._id}, Email: ${user.email}, Role: ${user.role}` : 'No user found');
+      
+      if (!user) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      const isMatch = await user.matchPassword(password);
+      console.log('Password match:', isMatch ? 'Yes' : 'No');
+
+      if (isMatch) {
+        const token = generateToken(user);
+        console.log('JWT token generated successfully for user');
+        
+        res.json({
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          area: user.area,
+          token: token,
+        });
+      } else {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: "Login failed", error: error.message });
     }
   })
 );

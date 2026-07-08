@@ -9,27 +9,78 @@ const AreaManager = require('../models/AreaManager');
 router.post('/', async (req, res) => {
   try {
     const { NIC_no, first_name, last_name, area, email, password } = req.body;
+    console.log('Manager creation attempt:', { NIC_no, email });
 
-    const existingManager = await AreaManager.findOne({ email });
-    if (existingManager) {
-      return res.status(400).json({ message: "Area manager already exists." });
+    // Validate required fields
+    if (!NIC_no || !first_name || !last_name || !area || !email || !password) {
+      console.log('Missing required fields');
+      return res.status(400).json({ 
+        message: "All fields are required: NIC, name, area, email, and password"
+      });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Check for existing records using parallel queries
+    const [existingNIC, existingEmail] = await Promise.all([
+      AreaManager.findOne({ NIC_no }),
+      AreaManager.findOne({ email })
+    ]);
 
-    const manager = new AreaManager({
+    if (existingNIC || existingEmail) {
+      console.log('Duplicate detected:', {
+        NIC_exists: !!existingNIC,
+        email_exists: !!existingEmail
+      });
+      return res.status(409).json({
+        message: "Registration conflict",
+        errors: {
+          ...(existingNIC && { NIC_no: "NIC number already registered" }),
+          ...(existingEmail && { email: "Email already in use" })
+        }
+      });
+    }
+
+    // Hash password with async/await
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create manager with proper error handling
+    const newManager = await AreaManager.create({
       NIC_no,
       first_name,
       last_name,
       area,
       email,
-      password: hashedPassword,
+      password: hashedPassword
     });
 
-    await manager.save();
-    res.status(201).json({ message: "Area manager created successfully." });
+    console.log('Manager created successfully:', newManager._id);
+    res.status(201).json({
+      _id: newManager._id,
+      email: newManager.email,
+      area: newManager.area,
+      message: "Area manager registered successfully"
+    });
+
   } catch (err) {
-    res.status(500).json({ message: "Failed to create area manager.", error: err.message });
+    console.error('Manager Creation Error:', err);
+    
+    // Handle MongoDB duplicate key errors
+    if (err.code === 11000) {
+      const keyPattern = Object.keys(err.keyPattern);
+      return res.status(409).json({
+        message: "Duplicate entry detected",
+        errors: keyPattern.reduce((acc, key) => ({
+          ...acc,
+          [key]: `${key.toUpperCase()} already exists`
+        }), {})
+      });
+    }
+
+    res.status(500).json({
+      message: "Server error during registration",
+      error: err.message,
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 });
 // ...existing code...
@@ -107,25 +158,35 @@ router.delete('/:NIC_no', authMiddleware, async (req, res) => {
 
 router.post('/manager-login', async (req, res) => {
   const { email, password } = req.body;
+  console.log('Manager login attempt with email:', email);
 
   try {
-    const manager = await AreaManager.findOne({ email });
-    if (!manager) {
-      return res.status(404).json({ message: "Area manager not found." });
+    if (!email || !password) {
+      console.log('Missing email or password in request');
+      return res.status(400).json({ message: "Email and password are required" });
     }
 
-    // bcrypt password check
-    const isMatch = await bcrypt.compare(password, manager.password);
-    if (!isMatch) {
+    const manager = await AreaManager.findOne({ email });   
+    console.log('Manager found:', manager ? 'Yes' : 'No');
+    
+    if (!manager) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
+    // bcrypt password check
+    console.log(manager.password);
+    
+    const isMatch = await manager.matchPassword(password);
+    console.log(isMatch);
+    
+
     // Generate JWT token
     const token = jwt.sign(
-      { id: manager._id, area: manager.area, role: "manager" },
+      { id: manager._id, email: manager.email, area: manager.area, role: "manager" },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "30d" }
     );
+    console.log('JWT token generated successfully');
 
     res.status(200).json({
       token,
@@ -139,6 +200,7 @@ router.post('/manager-login', async (req, res) => {
       },
     });
   } catch (err) {
+    console.error('Manager login error:', err);
     res.status(500).json({ message: "Login failed.", error: err.message });
   }
 });

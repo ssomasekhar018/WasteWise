@@ -18,13 +18,27 @@ function App() {
   useEffect(() => {
     // Standardize localStorage usage
     try {
+      const token = localStorage.getItem("token");
       const storedUser = localStorage.getItem("user");
       const storedManager = localStorage.getItem("manager");
+      
+      console.log('App initialization - Token exists:', !!token);
+      console.log('App initialization - User exists:', !!storedUser);
+      console.log('App initialization - Manager exists:', !!storedManager);
+      
       if (storedUser) setUser(JSON.parse(storedUser));
       if (storedManager) setManager(JSON.parse(storedManager));
+      
+      // If no token exists, clear user data for consistency
+      if (!token) {
+        console.log('No token found, clearing user data');
+        setUser(null);
+        setManager(null);
+      }
     } catch (error) {
       console.error("Error loading user data from localStorage:", error);
       // Clear potentially corrupted data
+      localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.removeItem("manager");
     }

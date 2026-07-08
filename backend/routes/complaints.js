@@ -78,14 +78,17 @@ router.get("/my-complaints", authMiddleware, async (req, res) => {
     const { email } = req.user;
 
     if (!email) {
+      console.error("Email information not available in the token.");
       return res.status(400).json({ message: "Email information not available in the token." });
     }
 
+    console.log("Searching for complaints with email:", email);
     const complaints = await Complaint.find({ email });
+    console.log("Found complaints:", complaints.length);
     res.status(200).json(complaints);
   } catch (err) {
     console.error("Error fetching user complaints:", err);
-    res.status(500).json({ message: "Failed to fetch user complaints." });
+    res.status(500).json({ message: "Failed to fetch user complaints.", error: err.message });
   }
 });
 

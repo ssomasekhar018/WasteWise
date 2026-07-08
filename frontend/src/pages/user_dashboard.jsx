@@ -13,29 +13,38 @@ import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 
 const UserDashboard = ({ user: propUser }) => {
-  // Remove the effect that logs out users on first load
-     useEffect(() => {
-       localStorage.removeItem("token");
-       localStorage.removeItem("user");
-     }, []);
+  // Don't remove token and user on dashboard load
+  // This was causing the authentication issues
+  // useEffect(() => {
+  //   localStorage.removeItem("token");
+  //   localStorage.removeItem("user");
+  // }, []);
   const [user, setUser] = useState(propUser || null);
   const [complaints, setComplaints] = useState([]);
   const navigate = useNavigate();
   const handleLogout = async () => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        await axios.post(
-          "https://wastewise-management.onrender.com/api/users/logout",
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        console.log("Logging out with token:", token.substring(0, 10) + '...');
+        // Call the logout API endpoint
+        // Use the api utility instead of hardcoded URL
+        await api.post(
+          "/users/logout",
+          {}
         );
-      } catch (err) {
-        // Optionally handle error
+        console.log("Logout API call successful");
       }
+    } catch (error) {
+      console.error("Error during logout API call:", error);
+    } finally {
+      // Always clear local storage and redirect
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+      navigate("/login");
+      console.log("Local storage cleared and redirected to login");
     }
-    localStorage.removeItem("token");
-    navigate("/login");
   };
   const [error, setError] = useState("");
   // Initialize showLoginPrompt based on whether user is logged in

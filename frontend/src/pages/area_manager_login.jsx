@@ -12,19 +12,34 @@ const AreaManagerLogin = ({ setManager }) => {
     e.preventDefault();
 
     try {
-      const { data } = await api.post("/area-managers/manager-login", {
+      console.log('Attempting area manager login with:', { email });
+      const response = await api.post("/area-managers/manager-login", {
         email,
         password,
       });
 
-      // Store token and manager data
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("manager", JSON.stringify(data.manager));
-      setManager(data.manager);
+      const data = response.data;
+      console.log('Area manager login response received:', data ? 'Data exists' : 'No data');
+      
+      if (data && data.token) {
+        console.log('Token received, storing in localStorage:', data.token.substring(0, 10) + '...');
+        
+        // Store token and manager data
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("manager", JSON.stringify(data.manager));
+        setManager(data.manager);
 
-      // Redirect to manager dashboard
-      navigate("/manager-dashboard");
+        // Redirect to manager dashboard
+        console.log('Redirecting to manager dashboard');
+        navigate("/manager-dashboard");
+      } else {
+        console.error('Login response missing token:', data);
+        setError("Login failed: Invalid response from server");
+      }
     } catch (err) {
+      console.error("Area manager login error:", err);
+      console.error("Error response:", err.response?.data);
+      console.error("Error status:", err.response?.status);
       setError(err.response?.data?.message || "Login failed. Please try again.");
     }
   };

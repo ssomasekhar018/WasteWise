@@ -29,28 +29,62 @@ const ViewComplaints = ({ user }) => {
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
+        console.log('Fetching complaints with token:', localStorage.getItem('token') ? 'Token exists' : 'No token');
         const response = await api.get(
           "/complaints/my-complaints"
         );
 
+        console.log('Complaints data received:', response.data);
         setComplaints(response.data);
       } catch (err) {
         console.error("Error fetching complaints:", err);
+        console.error("Error details:", err.response?.data);
         setError(err.response?.data?.message || "Failed to fetch complaints.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchComplaints();
+    // Check if user is logged in before fetching complaints
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchComplaints();
+    } else {
+      setError("You must be logged in to view complaints.");
+      setLoading(false);
+    }
   }, []);
 
   if (loading) {
-    return <p>Loading complaints...</p>;
+    return (
+      <div className="min-h-screen bg-gray-100 py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-gray-600 text-lg">Loading complaints...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <p style={{ color: "red" }}>{error}</p>;
+    return (
+      <div className="min-h-screen bg-gray-100 py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-bold text-center text-green-800 mb-10">
+            My Complaints
+          </h1>
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
+            <p>{error}</p>
+            {!localStorage.getItem('token') && (
+              <div className="mt-4">
+                <Link to="/login" className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                  Go to Login
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   }
 
 

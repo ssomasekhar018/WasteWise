@@ -30,14 +30,41 @@ const UserSignup = () => {
     }
     try {
       if (formData.accountType === "citizen") {
-        await api.post("/users/signup", {
+        console.log("Attempting citizen signup with data:", {
+          username: formData.username,
+          email: formData.email,
+          password: formData.password ? "[REDACTED]" : "missing",
+        });
+        
+        const response = await api.post("/users/signup", {
           username: formData.username,
           email: formData.email,
           password: formData.password,
         });
+        
+        console.log("Signup response:", response.data);
+        
+        // Store token if available in response
+        if (response.data && response.data.token) {
+          console.log("Storing token in localStorage");
+          localStorage.setItem("token", response.data.token);
+          localStorage.setItem("user", JSON.stringify(response.data));
+        } else {
+          console.warn("No token received in signup response");
+        }
+        
         navigate("/login");
       } else if (formData.accountType === "admin") {
-        await api.post("/area-managers", {
+        console.log("Attempting admin signup with data:", {
+          NIC_no: formData.NIC_no,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          area: formData.area,
+          email: formData.email,
+          password: formData.password ? "[REDACTED]" : "missing",
+        });
+        
+        const response = await api.post("/area-managers", {
           NIC_no: formData.NIC_no,
           first_name: formData.first_name,
           last_name: formData.last_name,
@@ -45,9 +72,13 @@ const UserSignup = () => {
           email: formData.email,
           password: formData.password,
         });
+        
+        console.log("Admin signup response:", response.data);
         navigate("/login");
       }
     } catch (err) {
+      console.error("Signup error:", err);
+      console.error("Error response:", err.response?.data);
       setError(err.response?.data?.message || "Signup failed");
     }
   };

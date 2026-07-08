@@ -85,7 +85,8 @@ const ComplaintForm = ({ user }) => {
     }
 
     try {
-      await api.post(
+      console.log('Submitting complaint with token:', localStorage.getItem('token') ? 'Token exists' : 'No token');
+      const response = await api.post(
         "/complaints",
         formData,
         {
@@ -94,10 +95,12 @@ const ComplaintForm = ({ user }) => {
           },
         }
       );
+      console.log('Complaint submission successful:', response.data);
       setSuccessMessage("Complaint submitted successfully!");
       setLocation({ lat: null, lng: null });
       setImage(null);
       setDescription("");
+      setWasteType("");
       setLocationText("");
       setWasteType("");
     } catch (err) {

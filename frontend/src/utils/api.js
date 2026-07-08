@@ -15,10 +15,35 @@ api.interceptors.request.use(
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('Adding token to request:', `Bearer ${token.substring(0, 10)}...`);
+    } else {
+      console.log('No token found in localStorage');
     }
     return config;
   },
   (error) => {
+    console.error('API request interceptor error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor to log responses
+api.interceptors.response.use(
+  (response) => {
+    console.log(`API Response from ${response.config.url}:`, response.status);
+    console.log('Response data:', response.data);
+    return response;
+  },
+  (error) => {
+    console.error('API Response Error:', error.response?.status, error.response?.data);
+    console.error('Error request URL:', error.config?.url);
+    console.error('Error request data:', error.config?.data);
+    
+    // Check for network errors
+    if (!error.response) {
+      console.error('Network error or server not responding');
+    }
+    
     return Promise.reject(error);
   }
 );
