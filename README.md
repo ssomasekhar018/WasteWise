@@ -159,7 +159,7 @@ The WasteWise Garbage Management System follows a three-tier architecture:
    ```
 
 4. **Access the application:**
-   - Frontend: http://localhost:5173
+   - Frontend: http://localhost:5174
    - Backend API: http://localhost:5000
 
 ---
@@ -191,7 +191,11 @@ The WasteWise Garbage Management System follows a three-tier architecture:
 Update `server/server.js`:
 ```javascript
 app.use(cors({
-  origin: ["http://localhost:5173", "https://your-frontend-url.onrender.com"],
+  origin: [
+    "http://localhost:5174",
+    "https://wastewise-1-v9qh.onrender.com",
+    "https://wastewise-ngki.onrender.com"
+  ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"],
