@@ -6,9 +6,9 @@ import api from "../utils/api";
 const UserLogin = ({ setUser, setManager }) => {
   // Pre-fill with test admin credentials for easier testing
   const [formData, setFormData] = useState({ 
-    email: "admin@example.com", 
-    password: "admin123", 
-    accountType: "admin" 
+    email: "user@example.com", 
+    password: "user123", 
+    accountType: "citizen" 
   });
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("signin");
@@ -17,7 +17,16 @@ const UserLogin = ({ setUser, setManager }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    if (name === "accountType") {
+      setFormData({
+        ...formData,
+        accountType: value,
+        email: value === "citizen" ? "user@example.com" : "admin@example.com",
+        password: value === "citizen" ? "user123" : "admin123",
+      });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -174,7 +183,7 @@ const UserLogin = ({ setUser, setManager }) => {
           <input
             type="email"
             name="email"
-            placeholder="Email"
+            placeholder={formData.accountType === "citizen" ? "user@example.com" : "admin@example.com"}
             value={formData.email}
             onChange={handleChange}
             className="w-full p-2 mb-3 border border-green-500 focus:border-green-700 focus:ring focus:ring-green-200 rounded outline-none"

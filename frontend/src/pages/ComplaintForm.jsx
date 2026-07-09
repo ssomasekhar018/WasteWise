@@ -1,27 +1,14 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import api from "../utils/api";
 import { GoogleMap, LoadScriptNext, Marker } from '@react-google-maps/api';
 import PropTypes from 'prop-types';
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { X } from "lucide-react";
 
 const ComplaintForm = ({ user }) => {
   const navigate = useNavigate();
   
-  // Redirect to login if user is not logged in
-  useEffect(() => {
-    if (!user) {
-      Swal.fire({
-        title: "Not Logged In",
-        text: "Please log in to submit a complaint",
-        icon: "warning",
-        confirmButtonText: "Go to Login",
-        confirmButtonColor: "#38a169",
-      }).then(() => {
-        navigate("/login");
-      });
-    }
-  }, [user, navigate]);
   // Default to Andhra Pradesh, India
   const [location, setLocation] = useState({ lat: 15.9129, lng: 79.74 });
   // Detect user location automatically on mount
@@ -43,29 +30,47 @@ const ComplaintForm = ({ user }) => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  const fileInputRef = useRef(null);
+
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
   };
 
+  const handleRemoveImage = () => {
+    setImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    Swal.fire({
-      title: "Complaint Submitted!",
-      text: "Your complaint has been successfully submitted. We will address it soon.",
-      icon: "success",
-      confirmButtonText: "OK",
-      confirmButtonColor: "#38a169",
-    });
+    setError("");
+    setSuccessMessage("");
 
     const token = localStorage.getItem("token");
 
-    if (!token) {
-      setError("Please log in first.");
+    if (!user || !token) {
+      Swal.fire({
+        title: "Account Required",
+        text: "Please sign up or sign in to submit a complaint.",
+        icon: "info",
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: "Sign Up",
+        denyButtonText: "Sign In",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#38a169",
+        denyButtonColor: "#2f855a",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/signup");
+        } else if (result.isDenied) {
+          navigate("/login");
+        }
+      });
       return;
     }
-
-    
 
     const formData = new FormData();
     formData.append("location", locationText);
@@ -73,19 +78,11 @@ const ComplaintForm = ({ user }) => {
     formData.append("description", description);
     formData.append("image", image);
     formData.append("wasteType", wasteType);
-    
-    // Only append user data if user exists
-    if (user) {
-      formData.append("username", user.username);
-      formData.append("email", user.email);
-    } else {
-      // Handle case when user is not available
-      setError("User information not available. Please log in again.");
-      return;
-    }
+    formData.append("username", user.username);
+    formData.append("email", user.email);
 
     try {
-      console.log('Submitting complaint with token:', localStorage.getItem('token') ? 'Token exists' : 'No token');
+      console.log('Submitting complaint with token:', token ? 'Token exists' : 'No token');
       const response = await api.post(
         "/complaints",
         formData,
@@ -96,23 +93,51 @@ const ComplaintForm = ({ user }) => {
         }
       );
       console.log('Complaint submission successful:', response.data);
+      
+      Swal.fire({
+        title: "Complaint Submitted!",
+        text: "Your complaint has been successfully submitted. We will address it soon.",
+        icon: "success",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#38a169",
+      });
+
       setSuccessMessage("Complaint submitted successfully!");
-      setLocation({ lat: null, lng: null });
+      setLocation({ lat: 15.9129, lng: 79.74 });
       setImage(null);
       setDescription("");
       setWasteType("");
       setLocationText("");
-      setWasteType("");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to submit complaint.");
+      Swal.fire({
+        title: "Failed to Submit",
+        text: err.response?.data?.message || "Failed to submit complaint. Please try again.",
+        icon: "error",
+        confirmButtonColor: "#d33",
+      });
     }
   };
 
   const handleMapClick = (event) => {
-    setLocation({
-      lat: event.latLng.lat(),
-      lng: event.latLng.lng(),
-    });
+    const lat = event.latLng.lat();
+    const lng = event.latLng.lng();
+    setLocation({ lat, lng });
+
+    if (window.google && window.google.maps) {
+      const geocoder = new window.google.maps.Geocoder();
+      geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+        if (status === "OK") {
+          if (results[0]) {
+            setLocationText(results[0].formatted_address);
+          } else {
+            console.log("No address found for this location");
+          }
+        } else {
+          console.error("Geocoder failed due to: " + status);
+        }
+      });
+    }
   };
 
   return (
@@ -177,11 +202,34 @@ const ComplaintForm = ({ user }) => {
           </div>
           <div>
             <label className="block text-gray-700 font-medium mb-2">Upload Image</label>
-            <input
-              type="file"
-              onChange={handleImageChange}
-              className="w-full p-4 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none"
-            />
+            {!image ? (
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                accept="image/*"
+                className="w-full p-4 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+              />
+            ) : (
+              <div className="relative inline-block border-2 border-gray-300 rounded-lg p-3 bg-gray-50 shadow-sm">
+                <img
+                  src={URL.createObjectURL(image)}
+                  alt="Upload preview"
+                  className="max-h-48 rounded object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute -top-2 -right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg transition duration-200 flex items-center justify-center"
+                  title="Remove image"
+                >
+                  <X size={16} />
+                </button>
+                <div className="mt-2 text-xs text-gray-500 max-w-xs truncate font-medium">
+                  {image.name}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

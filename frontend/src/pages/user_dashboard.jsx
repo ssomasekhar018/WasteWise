@@ -243,8 +243,8 @@ const UserDashboard = ({ user: propUser }) => {
 
 
 
-      <div className="flex flex-col justify-start items-start flex-grow">
-        {error && <p className="text-red-500 mb-4">{error}</p>}
+      <div className="flex flex-col justify-start items-start flex-grow w-full">
+        {error && user && <p className="text-red-500 mb-4">{error}</p>}
         <div className="bg-white p-6 rounded shadow-md w-full">
           {user ? (
             <>
@@ -254,12 +254,17 @@ const UserDashboard = ({ user: propUser }) => {
               <div className="text-center mt-4 mb-8">
                 <p className="text-lg text-gray-700">Hello, {user.username}! You are logged in as a {user.role}.</p>
               </div>
-              {/* Add ComplaintForm component for logged-in users */}
-              <div className="mb-8">
-                <h2 className="text-3xl font-semibold text-green-700 text-center tracking-widest uppercase mt-8 mb-4">Submit Your Complaint</h2>
-                <ComplaintForm user={user} />
-              </div>
-              
+            </>
+          ) : null}
+
+          {/* Always show ComplaintForm component */}
+          <div className="mb-8">
+            <h2 className="text-3xl font-semibold text-green-700 text-center tracking-widest uppercase mt-8 mb-4">Submit Your Complaint</h2>
+            <ComplaintForm user={user} />
+          </div>
+
+          {user && (
+            <>
               <h2 className="text-2xl font-semibold text-green-700 text-center mt-8 mb-4">My Complaints</h2>
               {complaints.length === 0 ? (
                 <p className="text-gray-600 text-center">You have not submitted any complaints yet.</p>
@@ -273,12 +278,6 @@ const UserDashboard = ({ user: propUser }) => {
                 </ul>
               )}
             </>
-          ) : (
-            <div className="text-center p-8 bg-green-50 border-2 border-green-200 rounded-lg">
-              <h2 className="text-2xl font-semibold text-green-700 mb-4">Please log in to access your dashboard</h2>
-              <p className="text-gray-600 mb-4">You need to be logged in to view your dashboard and submit complaints.</p>
-              <Link to="/login" className="px-6 py-3 bg-green-700 text-white rounded-md hover:bg-green-800 font-medium text-lg">Login Now</Link>
-            </div>
           )}
         </div>
       </div>
